@@ -1,0 +1,10 @@
+1.0.1: First version of EndangeredMap
+1.0.2:
+    - Create species table
+    - create_species_table.php
+1.0.3:
+    - Create statuses table
+    - create_statuses_table.php
+1.0.4:
+    - Create acronyms table
+    - create_acronyms_table.php

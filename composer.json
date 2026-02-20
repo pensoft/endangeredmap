@@ -1,0 +1,8 @@
+{
+    "name": "pensoft/endangeredmap-plugin",
+    "type": "october-plugin",
+    "description": "Interactive map displaying endangered species data.",
+    "require": {
+        "composer/installers": "~1.0"
+    }
+}

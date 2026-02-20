@@ -1,0 +1,6 @@
+plugin:
+    name: 'pensoft.endangeredmap::lang.plugin.name'
+    description: 'pensoft.endangeredmap::lang.plugin.description'
+    author: Pensoft
+    icon: icon-map-marker
+    homepage: ''

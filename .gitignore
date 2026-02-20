@@ -1,0 +1,60 @@
+node_modules
+dist
+.env
+*.Identifier
+composer.phar
+.DS_Store
+.idea
+.env.*.php
+.env.php
+auth.json
+php_errors.log
+composer.lock
+package-lock.json
+/node_modules
+.phpunit.result.cache
+/vendor
+
+# Composer dependencies
+/vendor/
+
+# Cache and temporary files
+.sass-cache/
+*.css.map
+*.sass.map
+*.scss.map
+.DS_Store
+Thumbs.db
+*.log
+*.cache
+*.tmp
+
+# Environment files
+.env
+.env.*
+
+# Build files and directories
+/dist/
+/node_modules/
+/npm-debug.log
+
+# Editor and IDE files
+/.idea/
+/.vscode/
+*.sublime-*
+*.swp
+*.swo
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+
+# other dirs
+endangered-species.xlsx
+
