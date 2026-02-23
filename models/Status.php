@@ -1,6 +1,7 @@
 <?php namespace Pensoft\EndangeredMap\Models;
 
 use Model;
+use Pensoft\EndangeredMap\Models\Acronym;
 
 /**
  * Status Model
@@ -13,6 +14,65 @@ class Status extends Model
      * @var string table associated with the model
      */
     public $table = 'pensoft_endangeredmap_statuses';
+
+    /**
+     * Status code merges: primary code => [variant DB codes]
+     * When filtering by a primary code, all variants are matched.
+     */
+    const STATUS_GROUPS = [
+        'P'  => ['P', 'I'],
+        'EN' => ['EN', 'E'],
+        'VU' => ['VU', 'V'],
+        'T'  => ['T', 'THREATENED', 'THREATENED WITH EXTINCTION'],
+        'R'  => ['R', 'RARE'],
+        'NA' => ['NA', 'NE'],
+    ];
+
+    /**
+     * Display labels for known primary status codes
+     */
+    const STATUS_LABELS = [
+        'P'     => 'Present',
+        'A'     => 'Absent',
+        'RE'    => 'Regionally Extinct',
+        'PE'    => 'Possibly Extinct',
+        'CR'    => 'Critically Endangered',
+        'EN'    => 'Endangered',
+        'VU'    => 'Vulnerable',
+        'T'     => 'Threatened',
+        'NT'    => 'Near Threatened',
+        'R'     => 'Rare',
+        'LC'    => 'Least Concern',
+        'NN'    => 'Non-Native',
+        'DD'    => 'Data Deficient',
+        'DD/LC' => 'Data Deficient & Least Concern',
+        'NA'    => 'Not Assessed',
+    ];
+
+    /**
+     * Desired display order by label name
+     */
+    const LABEL_ORDER = [
+        'Present',
+        'Absent',
+        'Regionally Extinct',
+        'Possibly Extinct',
+        'Critically Endangered',
+        'Endangered',
+        'Highly Threatened',
+        'Vulnerable',
+        'Threatened',
+        'Near Threatened',
+        'Extremely Rare',
+        'Very Rare',
+        'Rare',
+        'Least Concern',
+        'Not Threatened',
+        'Non-Native',
+        'Data Deficient',
+        'Data Deficient & Least Concern',
+        'Not Assessed',
+    ];
 
     /**
      * @var array guarded attributes aren't mass assignable
@@ -84,13 +144,67 @@ class Status extends Model
     }
 
     /**
-     * Get distinct status options
+     * Get status options with full names, merged groups, in specified order.
+     * Returns [primaryCode => label] for use in filter dropdowns.
      */
     public function getStatusOptions()
     {
-        return static::distinct()
-            ->orderBy('status')
-            ->pluck('status', 'status')
-            ->toArray();
+        $dbStatuses = static::distinct()->pluck('status')->toArray();
+        $acronyms = Acronym::pluck('meaning', 'acronym')->toArray();
+
+        // Build reverse map: variant DB code -> primary code
+        $reverseMap = [];
+        foreach (self::STATUS_GROUPS as $primary => $variants) {
+            foreach ($variants as $variant) {
+                $reverseMap[$variant] = $primary;
+            }
+        }
+
+        // Determine active primary codes and their labels
+        $options = [];
+        $seen = [];
+
+        foreach ($dbStatuses as $code) {
+            $primary = $reverseMap[$code] ?? $code;
+
+            if (isset($seen[$primary])) {
+                continue;
+            }
+            $seen[$primary] = true;
+
+            $label = self::STATUS_LABELS[$primary]
+                ?? $acronyms[$primary]
+                ?? $acronyms[$code]
+                ?? $primary;
+
+            $options[$primary] = $label;
+        }
+
+        // Sort by LABEL_ORDER position
+        $labelOrder = array_flip(self::LABEL_ORDER);
+
+        uksort($options, function ($a, $b) use ($options, $labelOrder) {
+            $posA = $labelOrder[$options[$a]] ?? 999;
+            $posB = $labelOrder[$options[$b]] ?? 999;
+            return $posA - $posB;
+        });
+
+        return $options;
+    }
+
+    /**
+     * Expand primary status codes into all variant DB codes for querying.
+     */
+    public static function expandStatusCodes($codes)
+    {
+        $expanded = [];
+        foreach ($codes as $code) {
+            if (isset(self::STATUS_GROUPS[$code])) {
+                $expanded = array_merge($expanded, self::STATUS_GROUPS[$code]);
+            } else {
+                $expanded[] = $code;
+            }
+        }
+        return array_unique($expanded);
     }
 }

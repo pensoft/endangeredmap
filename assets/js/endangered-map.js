@@ -16,33 +16,48 @@ $(document).ready(function () {
     var currentSpecies = null;
     var acronymsMap = {};
 
-    // Status colors (IUCN-based + custom statuses)
+    // Status colors for primary codes
     var statusColors = {
-        'CR': { color: '#D81E05', label: 'Critically Endangered' },
-        'EN': { color: '#FC7F3F', label: 'Endangered' },
-        'VU': { color: '#F9E814', label: 'Vulnerable' },
-        'NT': { color: '#CCE226', label: 'Near Threatened' },
-        'LC': { color: '#60C659', label: 'Least Concern' },
-        'DD': { color: '#D1D1C6', label: 'Data Deficient' },
-        'PE': { color: '#000000', label: 'Possibly Extinct' },
-        'RE': { color: '#542344', label: 'Regionally Extinct' },
-        'NN': { color: '#0076AA', label: 'Not Native' },
-        'NA': { color: '#FFFFFF', label: 'Not Applicable' },
-        'NE': { color: '#FFFFFF', label: 'Not Evaluated' },
-        'THREATENED': { color: '#E53935', label: 'Threatened' },
-        'RARE': { color: '#AB47BC', label: 'Rare' },
-        'P': { color: '#2E7D32', label: 'Present' },
-        'A': { color: '#B0BEC5', label: 'Absent' },
-        'EX': { color: '#000000', label: 'Extinct' },
-        'EW': { color: '#1B0C23', label: 'Extinct in the Wild' },
-        'R': { color: '#AB47BC', label: 'Rare' },
-        'T': { color: '#E53935', label: 'Threatened' },
-        'I': { color: '#4FC3F7', label: 'Indeterminate' },
-        'K': { color: '#78909C', label: 'Insufficiently Known' },
-        'S': { color: '#388E3C', label: 'Secure' },
-        'V': { color: '#FFA726', label: 'Vulnerable' },
-        'E': { color: '#D84315', label: 'Endangered' }
+        'P':     { color: '#2E7D32', label: 'Present' },
+        'A':     { color: '#B0BEC5', label: 'Absent' },
+        'RE':    { color: '#542344', label: 'Regionally Extinct' },
+        'PE':    { color: '#000000', label: 'Possibly Extinct' },
+        'CR':    { color: '#D81E05', label: 'Critically Endangered' },
+        'EN':    { color: '#FC7F3F', label: 'Endangered' },
+        'VU':    { color: '#F9E814', label: 'Vulnerable' },
+        'T':     { color: '#E53935', label: 'Threatened' },
+        'NT':    { color: '#F57C00', label: 'Near Threatened' },
+        'R':     { color: '#AB47BC', label: 'Rare' },
+        'LC':    { color: '#60C659', label: 'Least Concern' },
+        'NN':    { color: '#0076AA', label: 'Non-Native' },
+        'DD':    { color: '#D1D1C6', label: 'Data Deficient' },
+        'DD/LC': { color: '#D1D1C6', label: 'Data Deficient & Least Concern' },
+        'NA':    { color: '#FFFFFF', label: 'Not Assessed' },
+        'EX':    { color: '#000000', label: 'Extinct' },
+        'EW':    { color: '#1B0C23', label: 'Extinct in the Wild' },
+        'K':     { color: '#78909C', label: 'Insufficiently Known' },
+        'S':     { color: '#388E3C', label: 'Secure' }
     };
+
+    // Map variant DB codes to their primary code
+    var statusNormalize = {
+        'I': 'P',
+        'E': 'EN',
+        'V': 'VU',
+        'THREATENED': 'T',
+        'THREATENED WITH EXTINCTION': 'T',
+        'RARE': 'R',
+        'NE': 'NA'
+    };
+
+    function normalizeStatusCode(code) {
+        return statusNormalize[code] || code;
+    }
+
+    function getStatusInfo(code) {
+        var normalized = normalizeStatusCode(code);
+        return statusColors[normalized] || null;
+    }
 
     // DB country name -> GeoJSON country name mapping
     var countryNameMap = {
@@ -92,10 +107,9 @@ $(document).ready(function () {
             if (data.acronyms) {
                 data.acronyms.forEach(function (a) {
                     acronymsMap[a.acronym] = a.meaning;
-                    if (!statusColors[a.acronym]) {
-                        statusColors[a.acronym] = { color: getFallbackColor(), label: a.meaning };
-                    } else {
-                        statusColors[a.acronym].label = a.meaning;
+                    var normalized = normalizeStatusCode(a.acronym);
+                    if (!statusColors[normalized]) {
+                        statusColors[normalized] = { color: getFallbackColor(), label: a.meaning };
                     }
                 });
             }
@@ -168,9 +182,10 @@ $(document).ready(function () {
                 var name = feature.properties.name.toLowerCase();
                 var entry = countryStatusMap[name];
                 if (entry) {
-                    var sc = statusColors[entry.status];
+                    var normalized = normalizeStatusCode(entry.status);
+                    var sc = statusColors[normalized];
                     var fillColor = sc ? sc.color : '#999999';
-                    activeStatuses[entry.status] = true;
+                    activeStatuses[normalized] = true;
                     return {
                         fillColor: fillColor,
                         weight: 1,
@@ -186,7 +201,9 @@ $(document).ready(function () {
                 var entry = countryStatusMap[name];
                 var popupContent;
                 if (entry) {
-                    var meaning = entry.meaning || acronymsMap[entry.status] || entry.status;
+                    var normalized = normalizeStatusCode(entry.status);
+                    var sc = statusColors[normalized];
+                    var meaning = entry.meaning || acronymsMap[entry.status] || (sc ? sc.label : entry.status);
                     popupContent = '<strong>' + feature.properties.name + '</strong><br>' +
                         'Status: <strong>' + entry.status + '</strong> &ndash; ' + meaning;
                 } else {
@@ -208,6 +225,12 @@ $(document).ready(function () {
         updateLegend(activeStatuses);
     }
 
+    // Legend display order (matches the filter order)
+    var legendOrder = [
+        'P', 'A', 'RE', 'PE', 'CR', 'EN', 'VU', 'T', 'NT',
+        'R', 'LC', 'NN', 'DD', 'DD/LC', 'NA', 'EX', 'EW', 'K', 'S'
+    ];
+
     // Update legend
     function updateLegend(activeStatuses) {
         legendContainer.empty();
@@ -216,12 +239,17 @@ $(document).ready(function () {
             legendContainer.css('display', 'none');
             return;
         }
-        keys.sort();
+        // Sort by legendOrder position, unknowns at end
+        var orderMap = {};
+        legendOrder.forEach(function (code, i) { orderMap[code] = i; });
+        keys.sort(function (a, b) {
+            return (orderMap[a] !== undefined ? orderMap[a] : 999) - (orderMap[b] !== undefined ? orderMap[b] : 999);
+        });
         keys.forEach(function (code) {
             var sc = statusColors[code];
             if (!sc) return;
-            var border = (sc.color === '#FFFFFF' || sc.color === '#F9E814') ? '1px solid #ccc' : 'none';
-            var textColor = code === 'PE' ? '#fff' : '#333';
+            var border = (sc.color === '#FFFFFF' || sc.color === '#F9E814' || sc.color === '#D1D1C6') ? '1px solid #ccc' : 'none';
+            var textColor = (code === 'PE' || code === 'RE' || code === 'EW') ? '#fff' : '#333';
             legendContainer.append(
                 '<div class="legend-item">' +
                     '<span class="legend-swatch" style="background-color:' + sc.color + '; border:' + border + '; color:' + textColor + ';">' + code + '</span>' +

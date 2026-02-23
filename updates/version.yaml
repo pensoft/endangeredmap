@@ -8,3 +8,11 @@
 1.0.4:
     - Create acronyms table
     - create_acronyms_table.php
+1.0.5:
+    - Status filter shows full names in specified order with merged categories
+    - Taxon search now searches across genus, species, and family fields
+    - Merged status categories (NE into NA, Included into Present, Threatened variants)
+    - Added DD/LC color and legend support
+    - Changed Near Threatened color to orange
+    - Renamed page to National Red Lists in Europe
+    - Fixed selectize dropdown arrow overlap with remove button

@@ -29,7 +29,8 @@ class ApiController extends Controller
                     $q->whereIn('country', $countries);
                 }
                 if (!empty($statuses)) {
-                    $q->whereIn('status', $statuses);
+                    $expandedStatuses = Status::expandStatusCodes($statuses);
+                    $q->whereIn('status', $expandedStatuses);
                 }
             });
         }
@@ -47,7 +48,12 @@ class ApiController extends Controller
         }
 
         if (!empty($searchTerm)) {
-            $query->where('internal_name', 'like', "%{$searchTerm}%");
+            $query->where(function ($q) use ($searchTerm) {
+                $q->where('internal_name', 'like', "%{$searchTerm}%")
+                  ->orWhere('genus', 'like', "{$searchTerm}%")
+                  ->orWhere('species', 'like', "{$searchTerm}%")
+                  ->orWhere('family', 'like', "{$searchTerm}%");
+            });
         }
 
         $species = $query->orderBy('internal_name')

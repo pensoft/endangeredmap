@@ -11,8 +11,8 @@
             </div>
             <div class="col-md col-xs-12">
                 <select id="status-select" multiple placeholder="Status">
-                    {% for status in status_options %}
-                    <option value="{{ status }}">{{ status }}</option>
+                    {% for code, label in status_options %}
+                    <option value="{{ code }}">{{ label }}</option>
                     {% endfor %}
                 </select>
             </div>
