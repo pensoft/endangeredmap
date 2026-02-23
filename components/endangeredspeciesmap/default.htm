@@ -1,0 +1,78 @@
+<head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.13.3/js/standalone/selectize.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.13.3/css/selectize.default.min.css" />
+</head>
+
+<div class="container">
+    <form id="endangered-form">
+        <div class="row filters">
+            <div class="col-md-12 col-xs-12 mb-3 search-field">
+                <input type="text" id="species-search" class="form-control taxon-search" placeholder="Search by species name...">
+            </div>
+            <div class="col-md col-xs-12">
+                <select id="status-select" multiple placeholder="Status">
+                    {% for status in status_options %}
+                    <option value="{{ status }}">{{ status }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md col-xs-12">
+                <select id="country-select" multiple placeholder="Country">
+                    {% for country in country_options %}
+                    <option value="{{ country }}">{{ country }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md col-xs-12">
+                <select id="family-select" multiple placeholder="Family">
+                    {% for family in family_options %}
+                    <option value="{{ family }}">{{ family }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md col-xs-12">
+                <select id="genus-select" multiple placeholder="Genus">
+                    {% for genus in genus_options %}
+                    <option value="{{ genus }}">{{ genus }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md col-xs-12">
+                <select id="tribe-select" multiple placeholder="Tribe">
+                    {% for tribe in tribe_options %}
+                    <option value="{{ tribe }}">{{ tribe }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2 col-xs-12 clear-filter end-xs">
+                <a class="danger" id="reset-filters-button">Clear filters</a>
+            </div>
+        </div>
+    </form>
+
+    <div id="loader" style="display: none;">
+        <div class="loader-inner">
+            <div class="spinner"></div>
+        </div>
+    </div>
+
+    <div class="species-bar">
+        <div class="tooltip-hint"><span>* Select a species to view its status across countries</span></div>
+        <div id="selected-species" style="display: none;">
+            <div class="selected-species-tag">
+                <span>Selected:</span>
+                <strong id="selected-species-name"></strong>
+                <a class="remove-species" id="clear-species">&times;</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="map-area">
+        <div id="results"></div>
+        <div id="map-wrapper">
+            <div id="map" style="display: inline-block;"></div>
+        </div>
+    </div>
+
+    <div id="legend" class="map-legend"></div>
+</div>

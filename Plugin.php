@@ -50,7 +50,9 @@ class Plugin extends PluginBase
      */
     public function registerComponents()
     {
-        return [];
+        return [
+            'Pensoft\EndangeredMap\Components\EndangeredSpeciesMap' => 'endangeredSpeciesMap'
+        ];
     }
 
     /**
