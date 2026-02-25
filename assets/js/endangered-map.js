@@ -42,6 +42,9 @@ $(document).ready(function () {
     // Map variant DB codes to their primary code
     var statusNormalize = {
         'I': 'P',
+        'included': 'P',
+        'INCLUDED': 'P',
+        'Included': 'P',
         'E': 'EN',
         'V': 'VU',
         'THREATENED': 'T',
@@ -300,8 +303,18 @@ $(document).ready(function () {
         addDefaultGeoJSON();
     }
 
-    // Fetch search results
+    // Fetch search results with debounce and request cancellation
+    var searchDebounceTimer = null;
+    var currentAbortController = null;
+
     function fetchResults() {
+        if (searchDebounceTimer) {
+            clearTimeout(searchDebounceTimer);
+        }
+        searchDebounceTimer = setTimeout(doFetchResults, 250);
+    }
+
+    function doFetchResults() {
         var selectedCountries = $('#country-select').val() || [];
         var selectedFamilies = $('#family-select').val() || [];
         var selectedGenera = $('#genus-select').val() || [];
@@ -315,6 +328,12 @@ $(document).ready(function () {
             return;
         }
 
+        // Cancel any in-flight request
+        if (currentAbortController) {
+            currentAbortController.abort();
+        }
+        currentAbortController = new AbortController();
+
         var query = $.param({
             countries: selectedCountries,
             families: selectedFamilies,
@@ -324,7 +343,7 @@ $(document).ready(function () {
             search: searchTerm
         });
 
-        fetch('/api/endangered/search?' + query)
+        fetch('/api/endangered/search?' + query, { signal: currentAbortController.signal })
             .then(function (r) { return r.json(); })
             .then(function (data) {
                 resultsContainer.empty();
@@ -348,6 +367,13 @@ $(document).ready(function () {
                     showResults();
                 } else {
                     resultsContainer.append('<div class="results-header">No species found</div>');
+                    showResults();
+                }
+            })
+            .catch(function (err) {
+                if (err.name !== 'AbortError') {
+                    resultsContainer.empty();
+                    resultsContainer.append('<div class="results-header">Search error. Please try again.</div>');
                     showResults();
                 }
             });

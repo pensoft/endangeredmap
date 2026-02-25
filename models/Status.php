@@ -20,7 +20,7 @@ class Status extends Model
      * When filtering by a primary code, all variants are matched.
      */
     const STATUS_GROUPS = [
-        'P'  => ['P', 'I'],
+        'P'  => ['P', 'I', 'included'],
         'EN' => ['EN', 'E'],
         'VU' => ['VU', 'V'],
         'T'  => ['T', 'THREATENED', 'THREATENED WITH EXTINCTION'],
@@ -152,11 +152,11 @@ class Status extends Model
         $dbStatuses = static::distinct()->pluck('status')->toArray();
         $acronyms = Acronym::pluck('meaning', 'acronym')->toArray();
 
-        // Build reverse map: variant DB code -> primary code
+        // Build reverse map: variant DB code (lowercased) -> primary code
         $reverseMap = [];
         foreach (self::STATUS_GROUPS as $primary => $variants) {
             foreach ($variants as $variant) {
-                $reverseMap[$variant] = $primary;
+                $reverseMap[strtolower($variant)] = $primary;
             }
         }
 
@@ -165,7 +165,7 @@ class Status extends Model
         $seen = [];
 
         foreach ($dbStatuses as $code) {
-            $primary = $reverseMap[$code] ?? $code;
+            $primary = $reverseMap[strtolower($code)] ?? $code;
 
             if (isset($seen[$primary])) {
                 continue;

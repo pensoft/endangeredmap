@@ -30,7 +30,7 @@ class ApiController extends Controller
                 }
                 if (!empty($statuses)) {
                     $expandedStatuses = Status::expandStatusCodes($statuses);
-                    $q->whereIn('status', $expandedStatuses);
+                    $q->whereRaw('LOWER(status) IN (' . implode(',', array_fill(0, count($expandedStatuses), '?')) . ')', array_map('strtolower', $expandedStatuses));
                 }
             });
         }
@@ -49,10 +49,10 @@ class ApiController extends Controller
 
         if (!empty($searchTerm)) {
             $query->where(function ($q) use ($searchTerm) {
-                $q->where('internal_name', 'like', "%{$searchTerm}%")
-                  ->orWhere('genus', 'like', "{$searchTerm}%")
-                  ->orWhere('species', 'like', "{$searchTerm}%")
-                  ->orWhere('family', 'like', "{$searchTerm}%");
+                $q->where('internal_name', 'ilike', "%{$searchTerm}%")
+                  ->orWhere('genus', 'ilike', "{$searchTerm}%")
+                  ->orWhere('species', 'ilike', "{$searchTerm}%")
+                  ->orWhere('family', 'ilike', "{$searchTerm}%");
             });
         }
 

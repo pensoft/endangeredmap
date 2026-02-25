@@ -16,3 +16,7 @@
     - Changed Near Threatened color to orange
     - Renamed page to National Red Lists in Europe
     - Fixed selectize dropdown arrow overlap with remove button
+1.0.6:
+    - Fix search suggestions disappearing due to race conditions (added debounce and request cancellation)
+    - Fix "included" appearing as separate status in dropdown
+    - Fix case-sensitive search and status filtering for PostgreSQL (ILIKE)
