@@ -208,7 +208,7 @@ $(document).ready(function () {
                     var sc = statusColors[normalized];
                     var meaning = entry.meaning || acronymsMap[entry.status] || (sc ? sc.label : entry.status);
                     popupContent = '<strong>' + feature.properties.name + '</strong><br>' +
-                        'Status: <strong>' + entry.status + '</strong> &ndash; ' + meaning;
+                        'Status: <strong>' + meaning + '</strong>';
                 } else {
                     popupContent = feature.properties.name + '<br><em>No data</em>';
                 }
@@ -255,7 +255,7 @@ $(document).ready(function () {
             var textColor = (code === 'PE' || code === 'RE' || code === 'EW') ? '#fff' : '#333';
             legendContainer.append(
                 '<div class="legend-item">' +
-                    '<span class="legend-swatch" style="background-color:' + sc.color + '; border:' + border + '; color:' + textColor + ';">' + code + '</span>' +
+                    '<span class="legend-swatch" style="background-color:' + sc.color + '; border:' + border + ';"></span>' +
                     '<span class="legend-label">' + sc.label + '</span>' +
                 '</div>'
             );

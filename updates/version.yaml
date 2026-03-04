@@ -20,3 +20,5 @@
     - Fix search suggestions disappearing due to race conditions (added debounce and request cancellation)
     - Fix "included" appearing as separate status in dropdown
     - Fix case-sensitive search and status filtering for PostgreSQL (ILIKE)
+1.0.7:
+    - Remove acronym codes from legend and map tooltips, show only full status names
